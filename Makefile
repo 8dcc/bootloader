@@ -64,7 +64,7 @@ $(BOOT_IMG): $(STAGE1_BIN) $(STAGE2_BIN)
 	dd if=/dev/zero of=$@ bs=512 count=100
 	mkfs.fat -F 12 -D 0 -M 0xF0 -s 1 -S 512 -r 112 $@
 	mcopy -i $@ $^ "::/"
-	../scripts/copy-fat12-boot.sh $(STAGE1_BIN) $(BOOT_IMG)
+	scripts/copy-fat12-boot.sh $(STAGE1_BIN) $(BOOT_IMG)
 
 # The Stage 1 and Stage 2 flat binaries are linked from the ELF object files.
 $(STAGE1_BIN): $(STAGE1_OBJ)
