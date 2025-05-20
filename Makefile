@@ -17,11 +17,13 @@ QEMUFLAGS=-rtc base=localtime            \
           -machine pcspk-audiodev=audio0 \
           -monitor stdio
 
-STAGE1_BIN=stage1.bin
+BIN_SUFFIX=.bin
+
+STAGE1_BIN=stage1$(BIN_SUFFIX)
 STAGE1_SRC=src/stage1.asm
 STAGE1_OBJ=$(patsubst src/%,obj/%.o,$(STAGE1_SRC))
 
-STAGE2_BIN=stage2.bin
+STAGE2_BIN=stage2$(BIN_SUFFIX)
 STAGE2_SRC=src/stage2.asm
 STAGE2_OBJ=$(patsubst src/%,obj/%.o,$(STAGE2_SRC))
 
@@ -48,7 +50,7 @@ qemu-debug:
 # Generate ELF binaries that can't be run by the BIOS, but that can be used for
 # loading debug information into GDB.
 elf-bins:
-	$(MAKE) LDFLAGS="$(LDFLAGS) --oformat=elf32-i386" all
+	$(MAKE) BIN_SUFFIX=".elf" LDFLAGS="$(LDFLAGS) --oformat=elf32-i386" all
 
 # ------------------------------------------------------------------------------
 
