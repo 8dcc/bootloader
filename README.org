@@ -1,0 +1,98 @@
+#+TITLE: Bootloader
+#+AUTHOR: 8dcc
+#+OPTIONS: toc:2
+#+STARTUP: nofold
+
+*Simple Multiboot 1 bootloader, originally for [[https://github.com/8dcc/naos][naos]].*
+
+See also my [[https://8dcc.github.io/naos/bootloader.html][blog article]] about this project, which describes how it internally
+works.
+
+* Building
+
+This project has some dependencies, which will have to be installed on your
+system:
+
+- =nasm=: Assembler used in the project, see [[https://www.nasm.us/][its website]].
+- =mcopy= (usually from the =mtools= package): Used to copy the bootloader binaries
+  into the generated FAT12 image file.
+
+Optionally, you will need the [[https://www.qemu.org/][Qemu]] virtual machine for testing the bootloader.
+
+Once you have the necessary dependencies installed, you can clone this
+repository and build the bootloader:
+
+#+begin_src console
+$ git clone https://github.com/8dcc/sl
+$ cd sl
+$ make
+...
+#+end_src
+
+* Testing and debugging
+
+To test the bootloader simply use the =qemu= target:
+
+#+begin_src console
+$ make qemu
+...
+(qemu)             # Enter Qemu commands here
+#+end_src
+
+For debugging, use the =qemu-debug= target, which also opens a [[https://sourceware.org/gdb/][GDB]] server on TCP
+port 1234 (=-s= option), and pausing the CPU on startup (=-S= option).
+
+#+begin_src console
+$ make qemu-debug  # Will hang at startup.
+...
+(qemu)             # Enter Qemu commands here
+#+end_src
+
+Then, you can connect to this remote server through GDB:
+
+#+begin_src console
+(gdb) target remote :1234
+Remote debugging using :1234
+0x0000fff0 in ?? ()
+
+(gdb) ...  # Set breakpoints, etc.
+
+(gdb) c
+Continuing.
+#+end_src
+
+Furthermore, if you want to load some debugging information, you can build the
+ELF binaries with the =elf-bins= target, and then load them into GDB.
+
+#+begin_src console
+$ make elf-bins
+...
+
+$ ls *.elf
+stage1.elf  stage2.elf
+
+$ gdb
+(gdb) target remote :1234
+Remote debugging using :1234
+0x0000fff0 in ?? ()
+
+(gdb) add-symbol-file stage1.elf
+add symbol table from file "stage1.elf"
+(y or n) y
+Reading symbols from stage1.elf...
+
+(gdb) add-symbol-file stage2.elf
+add symbol table from file "stage2.elf"
+(y or n) y
+Reading symbols from stage2.elf...
+
+(gdb) break stage2_entry
+Breakpoint 1 at 0xa000: file src/stage2.asm, line 37.
+
+(gdb) c
+Continuing.
+
+Breakpoint 1, stage2_entry () at src/stage2.asm:37
+37      mov     si, str_stage2_loaded
+(gdb)
+#+end_src
