@@ -78,8 +78,8 @@
 ; Default operation size bit of 'gdt_entry_t.limit1'. Changes depending on the
 ; segment type; should always be set to 1 for 32-bit code and data segments, and
 ; to 0 for 16-bit code and data segments.
-%assign GDT_OPSIZE_16 (0 << 5)
-%assign GDT_OPSIZE_32 (1 << 5)
+%assign GDT_OPSIZE_16 (0 << 6)
+%assign GDT_OPSIZE_32 (1 << 6)
 
 ; 64-bit code segment flag of 'gdt_entry_t.limit1'. If set, indicates that the
 ; instructions in this code segment are executed in 64-bit mode (long mode).
