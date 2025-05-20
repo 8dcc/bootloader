@@ -45,7 +45,7 @@
 ; For code segments: Conforming bit of 'gdt_entry_t.flags'. If set, the code in
 ; this segment can only be executed from its ring (as specified in the DPL bits
 ; 5 and 6); if clear, it can be executed from an equal or lower privilege level
-; (see Intel SDM, Vol 3, Section 3.4.5.1).
+; (see Intel SDM, Vol. 3, Section 3.4.5.1).
 %assign GDT_FLAG_DIR_UP    (0 << 2)
 %assign GDT_FLAG_DIR_DOWN  (1 << 2)
 %assign GDT_FLAG_NOCONFORM (0 << 2)
@@ -62,7 +62,8 @@
 %assign GDT_FLAG_DATA_WRITEABLE (1 << 1)
 
 ; Accessed bit of 'gdt_entry_t.flags'. The CPU will set this bit to 1 unless it
-; was set in advance. Usually best to set in advance. See
+; was set in advance. Usually best to set in advance. See Intel SDM, Vol. 3,
+; Section 3.4.5.1.
 %assign GDT_FLAG_NOTACCESSED (1 << 0)
 %assign GDT_FLAG_ACCESSED    (1 << 1)
 
@@ -93,7 +94,7 @@
 ; bits (e.g. when represented in the Intel SDM tables), since the x86
 ; architecture is little-endian.
 ;
-; See also Intel SDM, Volume 3, Figure 3-8.
+; See also Intel SDM, Vol. 3, Figure 3-8.
 ;
 ; TODO: Perhaps rename to 'gdt_descriptor_t'?
 struc gdt_entry_t
