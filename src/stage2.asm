@@ -22,6 +22,7 @@
 %include "include/error_codes.asm"
 %include "include/bios_codes.asm"
 %include "include/fat12_structures.asm"
+%include "include/gdt.asm"
 
 extern bpb
 
@@ -51,7 +52,10 @@ stage2_entry:
     mov     si, str_a20_enabled
     call    bios_println
 
-    ; TODO
+    ; Load the bootloader's GDT, needed before jumping into protected mode.
+    lgdt    [gdt_pseudodescriptor]
+    mov     si, str_gdt_loaded
+    call    bios_println
 
     jmp     halt
 
@@ -243,6 +247,76 @@ enable_a20_keyboard:
     ret
 
 ;-------------------------------------------------------------------------------
+; Read-write data
+
+section .data
+
+; Flags for the code descriptor of the GDT.
+%assign CODE_FLAGS1 (GDT_FLAG_PRESENT | GDT_FLAG_DPL_RING0 | GDT_FLAG_NOTSYS | \
+                     GDT_FLAG_EXEC | GDT_FLAG_DIR_UP |                         \
+                     GDT_FLAG_CODE_READABLE | GDT_FLAG_ACCESSED)
+%assign CODE_FLAGS2 (GDT_GRANULARITY_4KB | GDT_OPSIZE_16 | GDT_64BIT_DISABLED)
+
+; Flags for the data descriptor of the GDT.
+%assign DATA_FLAGS1 (GDT_FLAG_PRESENT | GDT_FLAG_DPL_RING0 | GDT_FLAG_NOTSYS | \
+                     GDT_FLAG_DATA | GDT_FLAG_NOCONFORM |                      \
+                     GDT_FLAG_DATA_WRITEABLE | GDT_FLAG_ACCESSED)
+%assign DATA_FLAGS2 (GDT_GRANULARITY_4KB | GDT_OPSIZE_16 | GDT_64BIT_DISABLED)
+
+gdt_start:
+    ; The first segment is the "null descriptor", where the base, limit, access
+    ; bytes, and flags are 0. We declare 2 double words (2 * 32 bits) to fill a
+    ; single GDT entry.
+    .null_descriptor:
+        dd      0x00000000
+        dd      0x00000000
+
+    ; The code entry for the bootloader GDT will occupy the whole memory, that
+    ; is, the Base is 0x000000 and the Limit is 0x00FFFFFF. The flags are
+    ; defined by OR'ing different macros above, for readability. For more
+    ; information on the layout of GDT entries, see the definition in 'gdt.asm'.
+    .code_entry:
+        istruc gdt_entry_t
+            at gdt_entry_t.limit0,  dw 0xFFFF
+            at gdt_entry_t.base0,   dw 0x0000
+            at gdt_entry_t.base1,   db 0x00
+            at gdt_entry_t.flags,   db CODE_FLAGS1
+            at gdt_entry_t.limit1,  db CODE_FLAGS2 | 0b00001111
+            at gdt_entry_t.base2,   db 0x00
+        iend
+
+    ; The data entry has the same Limit and Base as the code entry, it just has
+    ; different flags.
+    .data_entry:
+        istruc gdt_entry_t
+            at gdt_entry_t.limit0,  dw 0xFFFF
+            at gdt_entry_t.base0,   dw 0x0000
+            at gdt_entry_t.base1,   db 0x00
+            at gdt_entry_t.flags,   db DATA_FLAGS1
+            at gdt_entry_t.limit1,  db DATA_FLAGS2 | 0b00001111
+            at gdt_entry_t.base2,   db 0x00
+        iend
+gdt_end:
+
+; Ensure that the following GDT pseudo-descriptor is double-word aligned at
+; compile-time, since that's what the 'LGDT' instruction expects. This check
+; assumes that the start of the current section is also doubleword-aligned,
+; which should be true according to our linker script.
+%if (($-$$) % 4 != 0)
+%error "GDT pseudo-descriptor is not doubleword-aligned, expected by `LGDT'."
+%endif
+
+; Pseudo-descriptor for the GDT. See Intel SDM, Vol. 3, Section 2.4.1 and
+; Figure 3-11.
+;
+; Note that the the limit value will be internally added to the base address to
+; get the address of the last valid byte, so it must be the GDT size minus
+; one. See Intel SDM, Vol. 3, Section 3.5.1.
+gdt_pseudodescriptor:
+    dw      gdt_end - gdt_start - 1     ; Size of the GDT, minus one (16 bits)
+    dd      gdt_start                   ; Pointer to the GDT (32 bits)
+
+;-------------------------------------------------------------------------------
 ; Read-only data
 
 section .rodata
@@ -252,3 +326,5 @@ str_stage2_loaded:
 
 str_a20_error:   db `Fatal: Could not enable A20 line.\0`
 str_a20_enabled: db `Successfuly enabled A20 line.\0`
+
+str_gdt_loaded: db `Successfuly loaded bootloader GDT.\0`

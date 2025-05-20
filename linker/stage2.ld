@@ -22,9 +22,6 @@ SECTIONS {
      *
      * It is important that this address matches the 'STAGE2_ADDR' macro defined
      * in 'include/boot_config.asm'.
-     *
-     * TODO: Perhaps move to a 'config.ld' script that also gets used when
-     * linking the Stage 1 binary.
      */
     . = STAGE2_ADDR;
 
@@ -33,11 +30,13 @@ SECTIONS {
         *(.text)
     }
 
-    /* Alignment is not necessary, but feels cleaner */
-    . = ALIGN(512);
+    /* Read-write data. Alignment is not necessary, just cleaner for hexdumps */
+    .data : ALIGN(512) {
+        *(.data)
+    }
 
     /* Read-only data (e.g. strings) */
-    .rodata : {
+    .rodata : ALIGN(512) {
         *(.rodata*)
     }
 }
