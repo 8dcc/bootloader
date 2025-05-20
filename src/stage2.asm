@@ -303,7 +303,8 @@ gdt_end:
 ; assumes that the start of the current section is also doubleword-aligned,
 ; which should be true according to our linker script.
 %if (($-$$) % 4 != 0)
-%error "GDT pseudo-descriptor is not doubleword-aligned, expected by `LGDT'."
+%warning "GDT pseudo-descriptor is not doubleword-aligned, expected by `LGDT'."
+times (4 - (($-$$) % 4)) db 0x00
 %endif
 
 ; Pseudo-descriptor for the GDT. See Intel SDM, Vol. 3, Section 2.4.1 and
