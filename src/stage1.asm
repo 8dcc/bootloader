@@ -388,7 +388,7 @@ read_file_contents:
     ; so we can't store the address in AX.
     mov     si, SCRATCH_BUFFER_ADDR     ; Address where the FAT is loaded
     add     si, cx                      ; SI = (uint8_t*)fat + absolute_idx
-    mov     ax, [es:si]                 ; AX = next_cluster_idx  // Extra nibble
+    mov     cx, [es:si]                 ; CX = next_cluster_idx  // Extra nibble
 
     ; Check if the absolute 8-bit index is odd or even. Depending on this, we
     ; will keep the upper or lower 3 nibbles, respectively.
@@ -397,11 +397,11 @@ read_file_contents:
 
     ; NOTE: We assume that the current machine has the same endianness as the
     ; FAT filesystems (little-endian).
-    shr     ax, 4               ; Keep upper 3 nibbles (index was odd)
+    shr     cx, 4               ; Keep upper 3 nibbles (index was odd)
     jmp     .continue
 
 .even:
-    and     ax, 0xFFF           ; Keep lower 3 nibbles (index was even)
+    and     cx, 0xFFF           ; Keep lower 3 nibbles (index was even)
 
 .continue:
     jmp     .loop
