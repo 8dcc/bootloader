@@ -359,6 +359,7 @@ read_file_contents:
     mul     byte [bpb + bpb_t.sectors_per_cluster] ; AX = AL * SpC
     add     ax, dx              ; AX += data_region_lba
 
+    push    dx                  ; Preserve data region LBA
     push    cx                  ; Preserve current cluster index
 
     ; Read a single cluster from AX into ES:BX.
@@ -367,13 +368,12 @@ read_file_contents:
     call    bios_disk_read
 
     ; Skip over the bytes we just read, for the next iteration.
-    push    dx                                  ; Overwritten by MUL with WORD
     mov     ax, cx                              ; AX = written_sectors
     mul     word [bpb + bpb_t.bytes_per_sector] ; DX:AX = written_bytes
     add     bx, ax                              ; dst += written_bytes
-    pop     dx
 
     pop     cx                  ; CX = cur_cluster_idx
+    mov     dx, cx              ; DX = cur_cluster_idx
 
     ; Move to the next index in the linked list.
     ;
@@ -390,9 +390,10 @@ read_file_contents:
     add     si, cx                      ; SI = (uint8_t*)fat + absolute_idx
     mov     cx, [es:si]                 ; CX = next_cluster_idx  // Extra nibble
 
-    ; Check if the absolute 8-bit index is odd or even. Depending on this, we
-    ; will keep the upper or lower 3 nibbles, respectively.
-    test    ax, 0b0000000000000001
+    ; Check if the 12-bit FAT index is odd or even. Depending on this, we will
+    ; keep the upper or lower 3 nibbles, respectively.
+    test    dx, 0b0000000000000001
+    pop     dx                          ; Restore data region LBA into DX
     jz      .even
 
     ; NOTE: We assume that the current machine has the same endianness as the
