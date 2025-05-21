@@ -30,13 +30,19 @@ SECTIONS {
         *(.text)
     }
 
-    /* Read-write data. Alignment is not necessary, just cleaner for hexdumps */
-    .data : ALIGN(512) {
+    /*
+     * Read-write data.
+     *
+     * Alignment is needed to avoid linker warnings if we generate the ELF file,
+     * since the writable data shouldn't be loaded with the '.text' section in
+     * an executable page.
+     */
+    .data : ALIGN(4K) {
         *(.data)
     }
 
     /* Read-only data (e.g. strings) */
-    .rodata : ALIGN(512) {
+    .rodata : ALIGN(4K) {
         *(.rodata*)
     }
 }
