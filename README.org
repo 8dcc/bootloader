@@ -16,6 +16,8 @@ system:
 - =nasm=: Assembler used in the project, see [[https://www.nasm.us/][its website]].
 - =mcopy= (usually from the =mtools= package): Used to copy the bootloader binaries
   into the generated FAT12 image file.
+- Cross-compiled i686 linker: This can be obtained from [[https://github.com/8dcc/i686-cross-compiler][my i686-cross-compiler
+  repo]].
 
 Optionally, you will need the [[https://www.qemu.org/][Qemu]] virtual machine for testing the bootloader.
 
@@ -95,4 +97,17 @@ Continuing.
 Breakpoint 1, stage2_entry () at src/stage2.asm:37
 37      mov     si, str_stage2_loaded
 (gdb)
+#+end_src
+
+Some other useful commands include =addr2line=, for obtaining the source number of
+addresses:
+
+#+begin_src console
+$ addr2line --pretty-print --basenames --addresses --functions --exe stage1.elf 0x7c00
+0x00007c00: stage1_entry at stage1.asm:66
+
+$ sed -n '65,67p' src/stage1.asm
+stage1_entry:
+    jmp     short stage1_main
+    nop
 #+end_src
