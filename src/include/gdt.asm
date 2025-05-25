@@ -88,15 +88,13 @@
 
 ; ------------------------------------------------------------------------------
 
-; Structure representing a simple entry in the Global Descriptor Table (GDT).
+; Structure representing a single entry in the Global Descriptor Table (GDT).
 ;
 ; Keep in mind that the first members on the structure represent logically lower
 ; bits (e.g. when represented in the Intel SDM tables), since the x86
 ; architecture is little-endian.
 ;
 ; See also Intel SDM, Vol. 3, Figure 3-8.
-;
-; TODO: Perhaps rename to 'gdt_descriptor_t'?
 struc gdt_entry_t
     .limit0:    resw 1      ; First 16 bits of limit
     .base0:     resw 1      ; First 16 bits of base

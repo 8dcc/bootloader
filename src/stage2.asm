@@ -275,7 +275,7 @@ gdt_start:
     ; is, the Base is 0x000000 and the Limit is 0x00FFFFFF. The flags are
     ; defined by OR'ing different macros above, for readability. For more
     ; information on the layout of GDT entries, see the definition in 'gdt.asm'.
-    .code_entry:
+    .code_descriptor_16bit:
         istruc gdt_entry_t
             at gdt_entry_t.limit0,  dw 0xFFFF
             at gdt_entry_t.base0,   dw 0x0000
@@ -287,13 +287,35 @@ gdt_start:
 
     ; The data entry has the same Limit and Base as the code entry, it just has
     ; different flags.
-    .data_entry:
+    .data_descriptor_16bit:
         istruc gdt_entry_t
             at gdt_entry_t.limit0,  dw 0xFFFF
             at gdt_entry_t.base0,   dw 0x0000
             at gdt_entry_t.base1,   db 0x00
             at gdt_entry_t.flags,   db DATA_FLAGS1
             at gdt_entry_t.limit1,  db DATA_FLAGS2 | 0b00001111
+            at gdt_entry_t.base2,   db 0x00
+        iend
+
+    ; There needs to be 32-bit code and data descriptors for when the bootloader
+    ; switches to protected mode. Only a single bit changes from zero to one.
+    .code_descriptor_32bit:
+        istruc gdt_entry_t
+            at gdt_entry_t.limit0,  dw 0xFFFF
+            at gdt_entry_t.base0,   dw 0x0000
+            at gdt_entry_t.base1,   db 0x00
+            at gdt_entry_t.flags,   db CODE_FLAGS1
+            at gdt_entry_t.limit1,  db CODE_FLAGS2 | GDT_OPSIZE_32 | 0b00001111
+            at gdt_entry_t.base2,   db 0x00
+        iend
+
+    .data_descriptor_32bit:
+        istruc gdt_entry_t
+            at gdt_entry_t.limit0,  dw 0xFFFF
+            at gdt_entry_t.base0,   dw 0x0000
+            at gdt_entry_t.base1,   db 0x00
+            at gdt_entry_t.flags,   db DATA_FLAGS1
+            at gdt_entry_t.limit1,  db DATA_FLAGS2 | GDT_OPSIZE_32 | 0b00001111
             at gdt_entry_t.base2,   db 0x00
         iend
 gdt_end:
