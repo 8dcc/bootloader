@@ -23,6 +23,7 @@
 %include "include/bios_codes.asm"
 %include "include/fat12_structures.asm"
 %include "include/gdt.asm"
+%include "include/protected_mode.asm"
 
 extern bpb
 
@@ -57,10 +58,29 @@ stage2_entry:
     mov     si, str_gdt_loaded
     call    bios_println
 
+    ; Set the Protection Enable bit of CR0.
+    ; See Intel SDM, Vol. 3, Section 9.9.1 "Switching to Protected Mode"
+    mov     eax, cr0
+    or      al, CR0_PE
+    mov     cr0, eax
+
+    ; Perform a far jump into the next instruction. The value of the segment is
+    ; the offset (in bytes) of the 32-bit code descriptor relative to the start
+    ; of the GDT.
+    jmp     (gdt_start.code_descriptor_32bit - gdt_start):.protected_mode_enabled
+
+.protected_mode_enabled:
+    bits 32
+
+    ; TODO: Load segment registers with segment selectors.
+    ; See Intel SDM, Vol. 3, Section 3.4.2 "Segment Selectors".
+
     jmp     halt
 
 ;-------------------------------------------------------------------------------
 ; Functions from Stage 1
+
+bits 16
 
 ; Included from external file to avoid duplicating code in Stage 1 and Stage 2.
 %include "bios_disk.asm"
@@ -329,12 +349,12 @@ gdt_end:
 times (4 - (($-$$) % 4)) db 0x00
 %endif
 
-; Pseudo-descriptor for the GDT. See Intel SDM, Vol. 3, Section 2.4.1 and
-; Figure 3-11.
+; Pseudo-descriptor for the GDT. See Intel SDM, Vol. 3, Section 2.4.1 "Global
+; Descriptor Table Register" and Figure 3-11.
 ;
 ; Note that the the limit value will be internally added to the base address to
 ; get the address of the last valid byte, so it must be the GDT size minus
-; one. See Intel SDM, Vol. 3, Section 3.5.1.
+; one. See Intel SDM, Vol. 3, Section 3.5.1 "Segment Descriptor Tables".
 gdt_pseudodescriptor:
     dw      gdt_end - gdt_start - 1     ; Size of the GDT, minus one (16 bits)
     dd      gdt_start                   ; Pointer to the GDT (32 bits)
