@@ -50,7 +50,7 @@ g_src=$1
 g_dst=$2
 
 assert_cmd 'stat'
-assert_cmd 'dd'
+assert_cmd "$DD"
 
 assert_file_size "$g_src"
 assert_file_size "$g_dst"
