@@ -64,16 +64,36 @@ stage2_entry:
     or      al, CR0_PE
     mov     cr0, eax
 
+    ; 32-bit code and data segment selectors for the bootloader.
+    ;
+    ; The lower 3 bits are used for the RPL and TI flags; in this case, we want
+    ; to use the GDT (rather than the LDT), in Ring 0 privilege. Bits [3..15]
+    ; indicate the GDT index of the segment descriptor that should be used,
+    ; which should match the GDT definition below (in the '.data' section).
+    ;
+    ; See Intel SDM, Vol. 3, Section 3.4.2 "Segment Selectors".
+    %assign CODE_SELECTOR_32BIT ((3 << 3) | GDT_SELECTOR_TI_GDT |              \
+                                 GDT_SELECTOR_RPL_RING0)
+    %assign DATA_SELECTOR_32BIT ((4 << 3) | GDT_SELECTOR_TI_GDT |              \
+                                 GDT_SELECTOR_RPL_RING0)
+
     ; Perform a far jump into the next instruction. The value of the segment is
-    ; the offset (in bytes) of the 32-bit code descriptor relative to the start
-    ; of the GDT.
-    jmp     (gdt_start.code_descriptor_32bit - gdt_start):.protected_mode_enabled
+    ; the code selector that was defined above, which will be loaded into the CS
+    ; register after the jump.
+    jmp     CODE_SELECTOR_32BIT:.protected_mode_enabled
 
 .protected_mode_enabled:
     bits 32
 
-    ; TODO: Load segment registers with segment selectors.
-    ; See Intel SDM, Vol. 3, Section 3.4.2 "Segment Selectors".
+    ; Load the segment registers with the segment selectors that were defined
+    ; above.
+    mov     ax, CODE_SELECTOR_32BIT
+    mov     cs, ax
+    mov     ax, DATA_SELECTOR_32BIT
+    mov     ds, ax
+    mov     es, ax
+    mov     fs, ax
+    mov     ss, ax
 
     jmp     halt
 

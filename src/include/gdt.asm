@@ -104,4 +104,15 @@ struc gdt_entry_t
     .base2:     resb 1      ; Last 8 bits of base
 endstruc
 
+; ------------------------------------------------------------------------------
+
+; Requested Privilege Level (RPL) bits of a Segment Selector.
+; See Intel SDM, Vol. 3, Section 3.4.2 "Segment Selectors".
+%assign GDT_SELECTOR_RPL_RING0 ((0 << 1) | (0 << 0))
+%assign GDT_SELECTOR_RPL_RING3 ((1 << 1) | (1 << 0))
+
+; Table Indicator (TI) bits of a Segment Selector.
+%assign GDT_SELECTOR_TI_GDT (0 << 2)
+%assign GDT_SELECTOR_TI_LDT (1 << 2)
+
 %endif ; GDT_ASM_
