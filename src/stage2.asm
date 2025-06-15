@@ -87,12 +87,11 @@ stage2_entry:
 
     ; Load the segment registers with the segment selectors that were defined
     ; above.
-    mov     ax, CODE_SELECTOR_32BIT
-    mov     cs, ax
     mov     ax, DATA_SELECTOR_32BIT
     mov     ds, ax
     mov     es, ax
     mov     fs, ax
+    mov     gs, ax
     mov     ss, ax
 
     jmp     halt
