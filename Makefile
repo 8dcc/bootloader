@@ -1,36 +1,36 @@
 
 # From: https://github.com/8dcc/i686-cross-compiler
-CROSS_COMPILE?=/usr/local/cross/bin/i686-elf-
+CROSS_COMPILE ?= /usr/local/cross/bin/i686-elf-
 
-AS=nasm
-ASFLAGS=-g -O0
+AS      := nasm
+ASFLAGS := -g -O0
 
-CC=$(CROSS_COMPILE)gcc
-CFLAGS=-std=c99 -Wall -Wextra -Wpedantic -ffreestanding -nostdlib
+CC     := $(CROSS_COMPILE)gcc
+CFLAGS := -std=c99 -Wall -Wextra -Wpedantic -ffreestanding -nostdlib
 
-LD=$(CROSS_COMPILE)ld
-LDFLAGS=--fatal-warnings -nostdlib
+LD      := $(CROSS_COMPILE)ld
+LDFLAGS := --fatal-warnings -nostdlib
 
-QEMU=qemu-system-i386
+QEMU := qemu-system-i386
 
 # NOTE: The '-enable-kvm' and '-cpu host' options could be added, but they mess
 # with GDB breakpoints, specially for bootloader debugging.
 #
 # See the comments in: https://stackoverflow.com/a/14269843/11715554
-QEMUFLAGS=-rtc base=localtime            \
-          -audiodev pa,id=audio0         \
-          -machine pcspk-audiodev=audio0 \
-          -monitor stdio
+QEMUFLAGS := -rtc base=localtime            \
+             -audiodev pa,id=audio0         \
+             -machine pcspk-audiodev=audio0 \
+             -monitor stdio
 
-STAGE1_BIN=stage1.bin
-STAGE1_SRC=src/stage1.asm
-STAGE1_OBJ=$(patsubst src/%,obj/%.o,$(STAGE1_SRC))
+STAGE1_BIN := stage1.bin
+STAGE1_SRC := src/stage1.asm
+STAGE1_OBJ := $(patsubst src/%,obj/%.o,$(STAGE1_SRC))
 
-STAGE2_BIN=stage2.bin
-STAGE2_SRC=src/stage2.asm src/stage2.c
-STAGE2_OBJ=$(patsubst src/%,obj/%.o,$(STAGE2_SRC))
+STAGE2_BIN := stage2.bin
+STAGE2_SRC := src/stage2.asm src/stage2.c
+STAGE2_OBJ := $(patsubst src/%,obj/%.o,$(STAGE2_SRC))
 
-BOOT_IMG=boot.img
+BOOT_IMG := boot.img
 
 # ------------------------------------------------------------------------------
 
