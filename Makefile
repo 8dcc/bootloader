@@ -2,6 +2,10 @@
 AS=nasm
 ASFLAGS=-g -O0
 
+# TODO: Add 'CROSS_COMPILE' variable.
+CC=/usr/local/cross/bin/i686-elf-gcc
+CFLAGS=-std=c99 -Wall -Wextra -Wpedantic -ffreestanding -nostdlib
+
 # From: https://github.com/8dcc/i686-cross-compiler
 LD=/usr/local/cross/bin/i686-elf-ld
 LDFLAGS=--fatal-warnings -nostdlib
@@ -22,7 +26,7 @@ STAGE1_SRC=src/stage1.asm
 STAGE1_OBJ=$(patsubst src/%,obj/%.o,$(STAGE1_SRC))
 
 STAGE2_BIN=stage2.bin
-STAGE2_SRC=src/stage2.asm
+STAGE2_SRC=src/stage2.asm src/stage2.c
 STAGE2_OBJ=$(patsubst src/%,obj/%.o,$(STAGE2_SRC))
 
 BOOT_IMG=boot.img
@@ -77,3 +81,7 @@ $(STAGE2_BIN): $(STAGE2_OBJ)
 obj/%.asm.o: src/%.asm
 	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) -f elf32 -i $(dir $<) -o $@ $<
+
+obj/%.c.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -o $@ -c $<

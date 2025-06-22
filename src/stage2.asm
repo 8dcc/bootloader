@@ -25,7 +25,8 @@
 %include "include/gdt.asm"
 %include "include/protected_mode.asm"
 
-extern bpb
+extern bpb              ; From 'stage1.asm'
+extern stage2_main      ; From 'stage2.c'
 
 ;-------------------------------------------------------------------------------
 ; Stage 2 entry point
@@ -94,6 +95,10 @@ stage2_entry:
     mov     gs, ax
     mov     ss, ax
 
+    ; Jump to the C entry point defined in 'stage2.c'.
+    call    stage2_main
+
+    ; Should be unreachable.
     jmp     halt
 
 ;-------------------------------------------------------------------------------
