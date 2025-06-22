@@ -1,13 +1,14 @@
 
+# From: https://github.com/8dcc/i686-cross-compiler
+CROSS_COMPILE?=/usr/local/cross/bin/i686-elf-
+
 AS=nasm
 ASFLAGS=-g -O0
 
-# TODO: Add 'CROSS_COMPILE' variable.
-CC=/usr/local/cross/bin/i686-elf-gcc
+CC=$(CROSS_COMPILE)gcc
 CFLAGS=-std=c99 -Wall -Wextra -Wpedantic -ffreestanding -nostdlib
 
-# From: https://github.com/8dcc/i686-cross-compiler
-LD=/usr/local/cross/bin/i686-elf-ld
+LD=$(CROSS_COMPILE)ld
 LDFLAGS=--fatal-warnings -nostdlib
 
 QEMU=qemu-system-i386
