@@ -384,7 +384,8 @@ gdt_pseudodescriptor:
 section .rodata
 
 str_stage2_loaded:
-    db `Initialized Stage 2 at address 0x`, %num(STAGE2_ADDR, -1, 16), `\0`
+    db `Reached Stage 2 entry point, at address 0x`,                           \
+       %num(STAGE2_ADDR, -1, 16), `\0`
 
 str_a20_error:   db `Fatal: Could not enable A20 line.\0`
 str_a20_enabled: db `Successfuly enabled A20 line.\0`
